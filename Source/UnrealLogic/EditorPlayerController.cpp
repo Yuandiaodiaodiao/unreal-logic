@@ -41,6 +41,7 @@ void AEditorPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Mouse_Right", IE_Pressed, this, &AEditorPlayerController::MouseRightClick);
 	InputComponent->BindAction("Put_Menu", IE_Pressed, this, &AEditorPlayerController::MenuOn);
 	InputComponent->BindAction("Next", IE_Pressed, this, &AEditorPlayerController::Next);
+	InputComponent->BindAction("Start_Sim", IE_Pressed, this, &AEditorPlayerController::StartSim);
 }
 
 void AEditorPlayerController::ChangeNodeState(UNodeStaticMeshComponent* component, FVector startNormal)
@@ -55,6 +56,7 @@ void AEditorPlayerController::ChangeNodeState(UNodeStaticMeshComponent* componen
 
 		//压入终点
 		componentArray.Add(component);
+		UE_LOG(LogTemp,Warning,TEXT("压入终点 %s"),*component->GetOuter()->GetName());
 		auto endPosition = component->GetComponentTransform().GetLocation();
 		linkingPositionTemp.Add(endPosition);
 		//todo-节点连接完成 保存节点信息
@@ -80,9 +82,9 @@ void AEditorPlayerController::ChangeNodeState(UNodeStaticMeshComponent* componen
 		}
 		auto gameState=Cast<AEditorStateBase>(GetWorld()->GetGameState());
 		auto lineObject=NewObject<ULinkObject>();
-		lineObject->init(linkingPositionTemp,linkingMeshTemp,componentArray.Top(),componentArray.Last());
+		lineObject->init(linkingPositionTemp,linkingMeshTemp,componentArray.HeapTop(),componentArray.Last());
 		gameState->lineArray.Add(lineObject);
-		componentArray.Top()->lineArray.Add(lineObject);
+		componentArray.HeapTop()->lineArray.Add(lineObject);
 		componentArray.Last()->lineArray.Add(lineObject);
 	}
 	else if (mouseState.Equals("release"))
@@ -93,6 +95,8 @@ void AEditorPlayerController::ChangeNodeState(UNodeStaticMeshComponent* componen
 		mouseState = "linking";
 		componentArray.Reset();
 		componentArray.Add(component);
+		UE_LOG(LogTemp,Warning,TEXT("压入起点 %s"),*component->GetOuter()->GetName());
+
 		auto startPosition = component->GetComponentTransform().GetLocation();
 		linkingPositionTemp.Add(startPosition);
 		//初始化第一次的圆柱
@@ -305,6 +309,12 @@ void AEditorPlayerController::ReFreshPut()
 
 		actorShow->SetActorLocation(pos);
 	}
+}
+
+void AEditorPlayerController::StartSim()
+{
+	auto gameState=Cast<AEditorStateBase>(GetWorld()->GetGameState());
+	gameState->CollectDataToGraph();
 }
 
 void AEditorPlayerController::ChangeMesh(FVector start, FVector end, ALinkStaticMeshActor* mesh)

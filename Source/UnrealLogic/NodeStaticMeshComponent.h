@@ -20,6 +20,9 @@ public:
 	
 	UPROPERTY(EditAnywhere)
 	FString type = "input";
-	
+	UPROPERTY(VisibleAnywhere)
 	TArray<UObject*> lineArray;
+	UPROPERTY(EditAnywhere)
+	bool nowactivate=false;
+	bool nextactivate=false;
 };

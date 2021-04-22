@@ -24,4 +24,5 @@ class UNREALLOGIC_API AEditorStateBase : public AGameStateBase
 	TArray<ABaseBlockActor*>blockArray;
 
 	void CollectDataToGraph();
+	void SolveTickLogic();
 };

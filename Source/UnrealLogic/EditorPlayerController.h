@@ -36,6 +36,7 @@ protected:
 	void Next(int idDelta);
 	void Next();
 	void ReFreshPut();
+	void StartSim();
 	void ChangeMesh(FVector start, FVector end, ALinkStaticMeshActor* mesh);
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;
