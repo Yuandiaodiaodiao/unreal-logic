@@ -26,4 +26,7 @@ public:
 	virtual void NotifyActorOnClicked(FKey ButtonPressed) override;
 	UFUNCTION()
 	void NodeClicked(UPrimitiveComponent* component,FKey key);
+	
+	UPROPERTY(EditAnywhere)
+	FString GateType;
 };
