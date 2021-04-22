@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-
+#include "BaseBlockActor.h"
 #include "LinkStaticMeshActor.h"
 #include "NodeStaticMeshComponent.h"
 #include "GameFramework/PlayerController.h"
@@ -21,7 +21,8 @@ class UNREALLOGIC_API AEditorPlayerController : public APlayerController
 	FString mouseState;
 	FVector linkDirection;
 	bool lock = false;
-
+	bool menuOn=false;
+	ABaseBlockActor* actorShow;
 protected:
 	TArray<UClass*> PutList;
 	FVector lastEndPosition;
@@ -32,7 +33,9 @@ protected:
 	void MouseLeftClick();
 	void MouseRightClick();
 	void MenuOn();
+	void Next(int idDelta);
 	void Next();
+	void ReFreshPut();
 	void ChangeMesh(FVector start, FVector end, ALinkStaticMeshActor* mesh);
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;

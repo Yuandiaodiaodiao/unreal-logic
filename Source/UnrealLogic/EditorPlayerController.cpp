@@ -137,6 +137,11 @@ void AEditorPlayerController::Tick(float DeltaSeconds)
 			// UE_LOG(LogTemp, Warning, TEXT("%s"), *mousePosition.ToString())
 			lastMousePosition = mousePosition;
 			OnMouseMove(mousePosition);
+			if(menuOn)
+			{
+				ReFreshPut();
+			}
+			
 		}
 	}
 }
@@ -148,6 +153,7 @@ void AEditorPlayerController::OnMouseMove(FVector2D mousePosition)
 		ChangeLinkShape(mousePosition);
 	}
 }
+
 
 void AEditorPlayerController::ChangeLinkShape(FVector2D mousePosition)
 {
@@ -207,6 +213,11 @@ void AEditorPlayerController::MouseLeftClick()
 			ChangeLinkShape(mousePosition);
 		}
 	}
+	if(menuOn)
+	{
+		menuOn=false;
+		actorShow=nullptr;
+	}
 }
 
 void AEditorPlayerController::MouseRightClick()
@@ -233,10 +244,67 @@ void AEditorPlayerController::MouseRightClick()
 
 void AEditorPlayerController::MenuOn()
 {
+	menuOn=!menuOn;
+	if(menuOn==false)
+	{
+		if(actorShow)
+		{
+			actorShow->Destroy();
+			auto gameState=Cast<AEditorStateBase>(GetWorld()->GetGameState());
+			gameState->blockArray.Remove(actorShow);
+		}
+	}
+	Next(-1);
+}
+
+void AEditorPlayerController::Next(int idDelta)
+{
+	if(menuOn==false)return;
+	static int buildId=0;
+	buildId+=idDelta;
+	buildId++;
+	buildId%=PutList.Num();
+	FVector Start, Dir, End;
+	if (DeprojectMousePositionToWorld(Start, Dir))
+	{
+		if(actorShow)
+		{
+			actorShow->Destroy();
+			auto gameState=Cast<AEditorStateBase>(GetWorld()->GetGameState());
+			gameState->blockArray.Remove(actorShow);
+		}
+		
+		//根据鼠标位置 计算出朝向和视角起点的世界坐标
+		End = Start + (Dir * 8e9f);
+		FVector pos = FMath::LinePlaneIntersection(Start, End,
+                                                   FVector(0,0,80),
+                                                   FVector(0, 0, 1));
+		actorShow=GetWorld()->SpawnActor<ABaseBlockActor>(PutList[buildId], pos, FRotator(0), FActorSpawnParameters());
+		actorShow->SetActorLocation(pos);
+	}
 }
 
 void AEditorPlayerController::Next()
 {
+	Next(0);
+}
+
+
+void AEditorPlayerController::ReFreshPut()
+{
+	FVector Start, Dir, End;
+	if (DeprojectMousePositionToWorld(Start, Dir))
+	{
+		
+		//根据鼠标位置 计算出朝向和视角起点的世界坐标
+		End = Start + (Dir * 8e9f);
+		FVector pos = FMath::LinePlaneIntersection(Start, End,
+                                                   FVector(0,0,80),
+                                                   FVector(0, 0, 1));
+		// UE_LOG(LogTemp, Warning, TEXT("%s"), *pos.ToString())
+
+		actorShow->SetActorLocation(pos);
+	}
 }
 
 void AEditorPlayerController::ChangeMesh(FVector start, FVector end, ALinkStaticMeshActor* mesh)

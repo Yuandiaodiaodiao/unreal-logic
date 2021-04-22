@@ -20,9 +20,10 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	
 	virtual void NotifyActorOnClicked(FKey ButtonPressed) override;
 	UFUNCTION()
 	void NodeClicked(UPrimitiveComponent* component,FKey key);

@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 
+
+#include "BaseBlockActor.h"
 #include "LinkObject.h"
 #include "GameFramework/GameStateBase.h"
 #include "EditorStateBase.generated.h"
@@ -18,4 +20,8 @@ class UNREALLOGIC_API AEditorStateBase : public AGameStateBase
 	public:
 	UPROPERTY(VisibleAnywhere)
 	TArray<ULinkObject*>lineArray;
+	UPROPERTY(VisibleAnywhere)
+	TArray<ABaseBlockActor*>blockArray;
+
+	void CollectDataToGraph();
 };

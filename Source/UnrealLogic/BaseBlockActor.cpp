@@ -6,6 +6,7 @@
 
 #include "CameraController.h"
 #include "EditorPlayerController.h"
+#include "EditorStateBase.h"
 #include "NodeStaticMeshComponent.h"
 
 // Sets default values
@@ -32,8 +33,12 @@ void ABaseBlockActor::BeginPlay()
 
 		// component->SetRelativeLocation(FVector(0,0,0));
 	}
-	UE_LOG(LogTemp, Warning, TEXT("begin"));
+	auto gameState=Cast<AEditorStateBase>(GetWorld()->GetGameState());
+	gameState->blockArray.Add(this);
+	// UE_LOG(LogTemp, Warning, TEXT("begin"));
 }
+
+
 
 // Called every frame
 void ABaseBlockActor::Tick(float DeltaTime)
