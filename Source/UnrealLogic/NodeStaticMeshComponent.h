@@ -25,4 +25,5 @@ public:
 	UPROPERTY(EditAnywhere)
 	bool nowactivate=false;
 	bool nextactivate=false;
+	
 };

@@ -5,6 +5,7 @@
 
 UNodeStaticMeshComponent::UNodeStaticMeshComponent()
 {
+	
 	// static auto mesh = ConstructorHelpers::FObjectFinderOptional<UStaticMesh>(
  //     TEXT("StaticMesh'/Game/StarterContent/Props/MaterialSphere.MaterialSphere'")).Get();
 	// UStaticMeshComponent::SetStaticMesh(mesh);
@@ -12,3 +13,5 @@ UNodeStaticMeshComponent::UNodeStaticMeshComponent()
 	// static auto material=ConstructorHelpers::FObjectFinderOptional<UMaterial>(TEXT("Material'/Game/StarterContent/Materials/M_Water_Lake.M_Water_Lake'")).Get();
 	// UMeshComponent::SetMaterial(0,material);
 }
+
+

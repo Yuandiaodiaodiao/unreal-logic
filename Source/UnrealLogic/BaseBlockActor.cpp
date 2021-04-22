@@ -44,6 +44,24 @@ void ABaseBlockActor::BeginPlay()
 void ABaseBlockActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	TArray<UNodeStaticMeshComponent*, TInlineAllocator<16>> componentArray;
+	GetComponents<UNodeStaticMeshComponent, TInlineAllocator<16>>(componentArray);
+	static auto materialInActivate=ConstructorHelpers::FObjectFinderOptional<UMaterial>(TEXT("Material'/Game/StarterContent/Materials/M_Water_Lake.M_Water_Lake'")).Get();
+	static auto materialActivate=ConstructorHelpers::FObjectFinderOptional<UMaterial>(TEXT("Material'/Game/Blueprints/Green.Green'")).Get();
+	// UMeshComponent::SetMaterial(0,material);
+	for (auto& component : componentArray)
+	{
+		
+		if(component->nowactivate)
+		{
+			
+			component->SetMaterial(1,materialActivate);
+		}else
+		{
+			component->SetMaterial(0,materialInActivate);
+		}
+		
+	}
 }
 
 void ABaseBlockActor::NotifyActorOnClicked(FKey ButtonPressed)
