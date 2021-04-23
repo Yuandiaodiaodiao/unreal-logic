@@ -63,8 +63,8 @@ void SolveOutput(ABaseBlockActor* actor, TArray<UNodeStaticMeshComponent*>& outp
                  TArray<UNodeStaticMeshComponent*>& inputComponents)
 {
 	auto type = actor->GateType;
-	auto and = [](bool x, bool y)-> bool { return x & y; };
-	auto or = [](bool x, bool y)-> bool { return x | y; };
+	auto and = [](bool x, bool y)-> bool { return x && y; };
+	auto or = [](bool x, bool y)-> bool { return x || y; };
 	if (type.Equals("And"))
 	{
 		outputComponents.HeapTop()->nextactivate = and(inputComponents.Last()->nextactivate,
@@ -75,8 +75,9 @@ void SolveOutput(ABaseBlockActor* actor, TArray<UNodeStaticMeshComponent*>& outp
 		outputComponents.HeapTop()->nextactivate = or(inputComponents.Last()->nextactivate,
 		                                              inputComponents.Last(1)->nextactivate);
 	}
-	else if (type.Equals("input"))
+	else if (type.Equals("Input"))
 	{
+		
 		//输入的输出 是始终同步的
 		outputComponents.HeapTop()->nextactivate = outputComponents.HeapTop()->nowactivate;
 	}

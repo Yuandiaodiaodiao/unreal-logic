@@ -42,6 +42,7 @@ void AEditorPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Put_Menu", IE_Pressed, this, &AEditorPlayerController::MenuOn);
 	InputComponent->BindAction("Next", IE_Pressed, this, &AEditorPlayerController::Next);
 	InputComponent->BindAction("Start_Sim", IE_Pressed, this, &AEditorPlayerController::StartSim);
+	InputComponent->BindAction("Always_Sim", IE_Pressed, this, &AEditorPlayerController::AlwaysSim);
 }
 
 void AEditorPlayerController::ChangeNodeState(UNodeStaticMeshComponent* component, FVector startNormal)
@@ -79,6 +80,9 @@ void AEditorPlayerController::ChangeNodeState(UNodeStaticMeshComponent* componen
 			auto& mesh1=linkingMeshTemp.Last(1);
 			auto& startPos2=linkingPositionTemp.Last(2);
 			ChangeMesh(startPos2,startPos,mesh1);
+		}else
+		{
+			
 		}
 		auto gameState=Cast<AEditorStateBase>(GetWorld()->GetGameState());
 		auto lineObject=NewObject<ULinkObject>();
@@ -86,6 +90,8 @@ void AEditorPlayerController::ChangeNodeState(UNodeStaticMeshComponent* componen
 		gameState->lineArray.Add(lineObject);
 		componentArray.HeapTop()->lineArray.Add(lineObject);
 		componentArray.Last()->lineArray.Add(lineObject);
+		linkingMeshTemp.Reset();
+		linkingPositionTemp.Reset();
 	}
 	else if (mouseState.Equals("release"))
 	{
@@ -113,6 +119,10 @@ void AEditorPlayerController::ChangeNodeState(UNodeStaticMeshComponent* componen
 void AEditorPlayerController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	if(simOn)
+	{
+		StartSim();
+	}
 	lock=false;
 	FVector2D mouseDelta;
 	GetInputMouseDelta(mouseDelta.X, mouseDelta.Y);
@@ -243,6 +253,38 @@ void AEditorPlayerController::MouseRightClick()
 		{
 			ChangeLinkShape(mousePosition);
 		}
+	}else
+	{
+		FVector Start, Dir, End;
+		if (DeprojectMousePositionToWorld(Start, Dir))
+		{
+			// DrawDebugLine(GetWorld(), Start, End, FColor::Blue, false, 10, 1, 10);
+			End = (Dir * 1e9f);
+			End+=Start;
+			//根据鼠标位置 计算出朝向和视角起点的世界坐标
+   
+			FHitResult HitResult;
+			GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility);
+			auto actor=HitResult.Actor.Get();
+			if(actor)
+			{
+				UClass* ca=actor->GetClass();
+				UClass* cb= ABaseBlockActor::StaticClass();
+				
+				
+					auto block=Cast<ABaseBlockActor>(actor);
+					if(block && block->GateType=="Input")
+					{
+						TArray<UNodeStaticMeshComponent*, TInlineAllocator<8>> componentArray;
+						actor->GetComponents<UNodeStaticMeshComponent, TInlineAllocator<8>>(componentArray);
+						auto component=componentArray.HeapTop();
+						component->nowactivate=!component->nowactivate;
+					}
+				
+			}
+
+		}
+
 	}
 }
 
@@ -279,7 +321,7 @@ void AEditorPlayerController::Next(int idDelta)
 		}
 		
 		//根据鼠标位置 计算出朝向和视角起点的世界坐标
-		End = Start + (Dir * 8e9f);
+		End = Start + (Dir * 1e9f);
 		FVector pos = FMath::LinePlaneIntersection(Start, End,
                                                    FVector(0,0,80),
                                                    FVector(0, 0, 1));
@@ -314,7 +356,14 @@ void AEditorPlayerController::ReFreshPut()
 void AEditorPlayerController::StartSim()
 {
 	auto gameState=Cast<AEditorStateBase>(GetWorld()->GetGameState());
-	gameState->CollectDataToGraph();
+	gameState->SolveTickLogic();
+}
+
+void AEditorPlayerController::AlwaysSim()
+{
+	
+	simOn=!simOn;
+	
 }
 
 void AEditorPlayerController::ChangeMesh(FVector start, FVector end, ALinkStaticMeshActor* mesh)

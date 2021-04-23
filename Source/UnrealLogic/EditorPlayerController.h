@@ -22,6 +22,8 @@ class UNREALLOGIC_API AEditorPlayerController : public APlayerController
 	FVector linkDirection;
 	bool lock = false;
 	bool menuOn=false;
+	UPROPERTY(EditAnywhere)
+	bool simOn=false;
 	ABaseBlockActor* actorShow;
 protected:
 	TArray<UClass*> PutList;
@@ -37,6 +39,7 @@ protected:
 	void Next();
 	void ReFreshPut();
 	void StartSim();
+	void AlwaysSim();
 	void ChangeMesh(FVector start, FVector end, ALinkStaticMeshActor* mesh);
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;

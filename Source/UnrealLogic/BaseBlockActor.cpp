@@ -12,6 +12,9 @@
 // Sets default values
 ABaseBlockActor::ABaseBlockActor()
 {
+
+	materialInActivate=ConstructorHelpers::FObjectFinderOptional<UMaterial>(TEXT("Material'/Game/StarterContent/Materials/M_Water_Lake.M_Water_Lake'")).Get();
+	materialActivate=ConstructorHelpers::FObjectFinderOptional<UMaterial>(TEXT("Material'/Game/Blueprints/Green.Green'")).Get();
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	// UNodeStaticMeshComponent* component=CreateDefaultSubobject<UNodeStaticMeshComponent>(TEXT("0"));
@@ -29,7 +32,8 @@ void ABaseBlockActor::BeginPlay()
 	for (UActorComponent* componento : nodeComponents)
 	{
 		UNodeStaticMeshComponent* component = Cast<UNodeStaticMeshComponent>(componento);
-		component->OnClicked.AddDynamic(this, &ABaseBlockActor::NodeClicked);
+		component->OnClicked.AddUniqueDynamic(this, &ABaseBlockActor::NodeClicked);
+
 
 		// component->SetRelativeLocation(FVector(0,0,0));
 	}
@@ -44,29 +48,36 @@ void ABaseBlockActor::BeginPlay()
 void ABaseBlockActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	TArray<UNodeStaticMeshComponent*, TInlineAllocator<16>> componentArray;
-	GetComponents<UNodeStaticMeshComponent, TInlineAllocator<16>>(componentArray);
-	static auto materialInActivate=ConstructorHelpers::FObjectFinderOptional<UMaterial>(TEXT("Material'/Game/StarterContent/Materials/M_Water_Lake.M_Water_Lake'")).Get();
-	static auto materialActivate=ConstructorHelpers::FObjectFinderOptional<UMaterial>(TEXT("Material'/Game/Blueprints/Green.Green'")).Get();
-	// UMeshComponent::SetMaterial(0,material);
-	for (auto& component : componentArray)
-	{
-		
-		if(component->nowactivate)
-		{
-			
-			component->SetMaterial(1,materialActivate);
-		}else
-		{
-			component->SetMaterial(0,materialInActivate);
-		}
-		
-	}
+	// TArray<UNodeStaticMeshComponent*, TInlineAllocator<16>> componentArray;
+	// GetComponents<UNodeStaticMeshComponent, TInlineAllocator<16>>(componentArray);
+	//
+	// // UMeshComponent::SetMaterial(0,material);
+	// for (auto& component : componentArray)
+	// {
+	// 	
+	// 	if(component->nowactivate)
+	// 	{
+	// 		UE_LOG(LogTemp,Warning,TEXT("添加材质"));
+	// 		component->SetMaterial(0,materialActivate);
+	// 	}else
+	// 	{
+	// 		component->SetMaterial(0,materialInActivate);
+	// 	}
+	// 	
+	// }
 }
 
 void ABaseBlockActor::NotifyActorOnClicked(FKey ButtonPressed)
 {
-	UE_LOG(LogTemp, Warning, TEXT("onclick"));
+	TArray<UActorComponent*> nodeComponents = GetComponentsByClass(UNodeStaticMeshComponent::StaticClass());
+	for (UActorComponent* componento : nodeComponents)
+	{
+		UNodeStaticMeshComponent* component = Cast<UNodeStaticMeshComponent>(componento);
+		component->OnClicked.AddUniqueDynamic(this, &ABaseBlockActor::NodeClicked);
+
+		// component->SetRelativeLocation(FVector(0,0,0));
+	}
+	UE_LOG(LogTemp, Warning, TEXT("Actor onclick"));
 }
 
 void ABaseBlockActor::NodeClicked(UPrimitiveComponent* component, FKey key)

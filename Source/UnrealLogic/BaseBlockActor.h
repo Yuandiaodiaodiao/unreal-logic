@@ -10,24 +10,26 @@ UCLASS()
 class UNREALLOGIC_API ABaseBlockActor : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	ABaseBlockActor();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	UMaterial* materialInActivate;
+	UMaterial* materialActivate;
 
-public:	
+public:
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	
+
 	virtual void NotifyActorOnClicked(FKey ButtonPressed) override;
 	UFUNCTION()
-	void NodeClicked(UPrimitiveComponent* component,FKey key);
-	
+	void NodeClicked(UPrimitiveComponent* component, FKey key);
+
 	UPROPERTY(EditAnywhere)
 	FString GateType;
 };

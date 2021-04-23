@@ -22,7 +22,7 @@ public:
 	FString type = "input";
 	UPROPERTY(VisibleAnywhere)
 	TArray<UObject*> lineArray;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(BlueprintReadWrite,EditAnywhere)
 	bool nowactivate=false;
 	bool nextactivate=false;
 	
