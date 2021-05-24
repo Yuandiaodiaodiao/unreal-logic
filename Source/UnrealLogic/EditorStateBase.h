@@ -8,8 +8,9 @@
 #include "BaseBlockActor.h"
 #include "LinkObject.h"
 #include "GameFramework/GameStateBase.h"
-#include "EditorStateBase.generated.h"
 
+
+#include "EditorStateBase.generated.h"
 /**
  * 
  */
@@ -17,12 +18,13 @@ UCLASS(BlueprintType)
 class UNREALLOGIC_API AEditorStateBase : public AGameStateBase
 {
 	GENERATED_BODY()
-	public:
+public:
 	UPROPERTY(VisibleAnywhere)
-	TArray<ULinkObject*>lineArray;
+	TArray<ULinkObject*> lineArray;
 	UPROPERTY(VisibleAnywhere)
-	TArray<ABaseBlockActor*>blockArray;
+	TArray<ABaseBlockActor*> blockArray;
 
 	void CollectDataToGraph();
 	void SolveTickLogic();
+	void SaveVerilog();
 };

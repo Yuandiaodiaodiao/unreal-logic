@@ -43,6 +43,7 @@ void AEditorPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Next", IE_Pressed, this, &AEditorPlayerController::Next);
 	InputComponent->BindAction("Start_Sim", IE_Pressed, this, &AEditorPlayerController::StartSim);
 	InputComponent->BindAction("Always_Sim", IE_Pressed, this, &AEditorPlayerController::AlwaysSim);
+	InputComponent->BindAction("SaveVerilog", IE_Pressed, this, &AEditorPlayerController::SaveVerilog);
 }
 
 void AEditorPlayerController::ChangeNodeState(UNodeStaticMeshComponent* component, FVector startNormal)
@@ -57,36 +58,36 @@ void AEditorPlayerController::ChangeNodeState(UNodeStaticMeshComponent* componen
 
 		//压入终点
 		componentArray.Add(component);
-		UE_LOG(LogTemp,Warning,TEXT("压入终点 %s"),*component->GetOuter()->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("压入终点 %s"), *component->GetOuter()->GetName());
 		auto endPosition = component->GetComponentTransform().GetLocation();
 		linkingPositionTemp.Add(endPosition);
 		//todo-节点连接完成 保存节点信息
 		//n个柱子 n+1个position
 		//最后一段连接强制修正到终点
-		if(linkingMeshTemp.Num()>1)
+		if (linkingMeshTemp.Num() > 1)
 		{
-			auto& mesh=linkingMeshTemp.Last();
-			auto& endPos=linkingPositionTemp.Last();
-			auto& startPos=linkingPositionTemp.Last(1);
+			auto& mesh = linkingMeshTemp.Last();
+			auto& endPos = linkingPositionTemp.Last();
+			auto& startPos = linkingPositionTemp.Last(1);
 			if (linkDirection.X == 0)
 			{
 				startPos.X = endPos.X;
 			}
 			else
 			{
-				startPos.Y=endPos.Y;
+				startPos.Y = endPos.Y;
 			}
-			ChangeMesh(startPos,endPos,mesh);
-			auto& mesh1=linkingMeshTemp.Last(1);
-			auto& startPos2=linkingPositionTemp.Last(2);
-			ChangeMesh(startPos2,startPos,mesh1);
-		}else
-		{
-			
+			ChangeMesh(startPos, endPos, mesh);
+			auto& mesh1 = linkingMeshTemp.Last(1);
+			auto& startPos2 = linkingPositionTemp.Last(2);
+			ChangeMesh(startPos2, startPos, mesh1);
 		}
-		auto gameState=Cast<AEditorStateBase>(GetWorld()->GetGameState());
-		auto lineObject=NewObject<ULinkObject>();
-		lineObject->init(linkingPositionTemp,linkingMeshTemp,componentArray.HeapTop(),componentArray.Last());
+		else
+		{
+		}
+		auto gameState = Cast<AEditorStateBase>(GetWorld()->GetGameState());
+		auto lineObject = NewObject<ULinkObject>();
+		lineObject->init(linkingPositionTemp, linkingMeshTemp, componentArray.HeapTop(), componentArray.Last());
 		gameState->lineArray.Add(lineObject);
 		componentArray.HeapTop()->lineArray.Add(lineObject);
 		componentArray.Last()->lineArray.Add(lineObject);
@@ -95,13 +96,13 @@ void AEditorPlayerController::ChangeNodeState(UNodeStaticMeshComponent* componen
 	}
 	else if (mouseState.Equals("release"))
 	{
-		lock=true;
+		lock = true;
 		linkDirection = startNormal;
 		//节点起点
 		mouseState = "linking";
 		componentArray.Reset();
 		componentArray.Add(component);
-		UE_LOG(LogTemp,Warning,TEXT("压入起点 %s"),*component->GetOuter()->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("压入起点 %s"), *component->GetOuter()->GetName());
 
 		auto startPosition = component->GetComponentTransform().GetLocation();
 		linkingPositionTemp.Add(startPosition);
@@ -119,26 +120,25 @@ void AEditorPlayerController::ChangeNodeState(UNodeStaticMeshComponent* componen
 void AEditorPlayerController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	if(simOn)
+	if (simOn)
 	{
 		StartSim();
 	}
-	lock=false;
+	lock = false;
 	FVector2D mouseDelta;
 	GetInputMouseDelta(mouseDelta.X, mouseDelta.Y);
 	static FVector2D lastMousePosition;
 
 	if (mouseDelta.GetAbsMax() > 0)
 	{
-		mouseDelta*=-50;
+		mouseDelta *= -50;
 		if (UWorld* World = GetWorld())
 		{
-
 			for (FConstCameraActorIterator Iterator = World->GetAutoActivateCameraIterator(); Iterator; ++Iterator)
 			{
 				ACameraActor* PlayerController = Iterator->Get();
-				PlayerController->SetActorLocation(PlayerController->GetActorLocation()+FVector(mouseDelta.Y,mouseDelta.X,0));
-
+				PlayerController->SetActorLocation(
+					PlayerController->GetActorLocation() + FVector(mouseDelta.Y, mouseDelta.X, 0));
 			}
 		}
 	}
@@ -151,11 +151,10 @@ void AEditorPlayerController::Tick(float DeltaSeconds)
 			// UE_LOG(LogTemp, Warning, TEXT("%s"), *mousePosition.ToString())
 			lastMousePosition = mousePosition;
 			OnMouseMove(mousePosition);
-			if(menuOn)
+			if (menuOn)
 			{
 				ReFreshPut();
 			}
-			
 		}
 	}
 }
@@ -193,10 +192,10 @@ void AEditorPlayerController::ChangeLinkShape(FVector2D mousePosition)
 		}
 		else
 		{
-			pos.Y=startPosition.Y;
+			pos.Y = startPosition.Y;
 			mesh->SetActorRotation(FRotator(0, 90, 90));
 		}
-		ChangeMesh(startPosition,pos,mesh);
+		ChangeMesh(startPosition, pos, mesh);
 		// float distance = FVector::Distance(pos, startPosition);
 		// mesh->SetActorScale3D(FVector(0.25, 0.25, distance / 100));
 		//
@@ -210,13 +209,13 @@ void AEditorPlayerController::MouseLeftClick()
 {
 	UE_LOG(LogTemp, Warning, TEXT("leftclick"))
 
-	if (mouseState.Equals("linking") && lock==false)
+	if (mouseState.Equals("linking") && lock == false)
 	{
-		float temp=linkDirection.X;
+		float temp = linkDirection.X;
 		linkDirection.X = linkDirection.Y;
 		linkDirection.Y = temp;
 		//节点起点
-		
+
 		linkingPositionTemp.Add(lastEndPosition);
 		//初始化第一次的圆柱
 		auto mesh = createLinkingMesh(lastEndPosition);
@@ -227,25 +226,25 @@ void AEditorPlayerController::MouseLeftClick()
 			ChangeLinkShape(mousePosition);
 		}
 	}
-	if(menuOn)
+	if (menuOn)
 	{
-		menuOn=false;
-		actorShow=nullptr;
+		menuOn = false;
+		actorShow = nullptr;
 	}
 }
 
 void AEditorPlayerController::MouseRightClick()
 {
-	if(mouseState.Equals("linking"))
+	if (mouseState.Equals("linking"))
 	{
-		float temp=linkDirection.X;
+		float temp = linkDirection.X;
 		linkDirection.X = linkDirection.Y;
 		linkDirection.Y = temp;
 		linkingPositionTemp.Pop();
 		linkingMeshTemp.Pop()->Destroy();
-		if(linkingMeshTemp.Num()==0)
+		if (linkingMeshTemp.Num() == 0)
 		{
-			mouseState="release";
+			mouseState = "release";
 			return;
 		}
 		FVector2D mousePosition;
@@ -253,50 +252,48 @@ void AEditorPlayerController::MouseRightClick()
 		{
 			ChangeLinkShape(mousePosition);
 		}
-	}else
+	}
+	else
 	{
 		FVector Start, Dir, End;
 		if (DeprojectMousePositionToWorld(Start, Dir))
 		{
 			// DrawDebugLine(GetWorld(), Start, End, FColor::Blue, false, 10, 1, 10);
 			End = (Dir * 1e9f);
-			End+=Start;
+			End += Start;
 			//根据鼠标位置 计算出朝向和视角起点的世界坐标
-   
+
 			FHitResult HitResult;
 			GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility);
-			auto actor=HitResult.Actor.Get();
-			if(actor)
+			auto actor = HitResult.Actor.Get();
+			if (actor)
 			{
-				UClass* ca=actor->GetClass();
-				UClass* cb= ABaseBlockActor::StaticClass();
-				
-				
-					auto block=Cast<ABaseBlockActor>(actor);
-					if(block && block->GateType=="Input")
-					{
-						TArray<UNodeStaticMeshComponent*, TInlineAllocator<8>> componentArray;
-						actor->GetComponents<UNodeStaticMeshComponent, TInlineAllocator<8>>(componentArray);
-						auto component=componentArray.HeapTop();
-						component->nowactivate=!component->nowactivate;
-					}
-				
+				UClass* ca = actor->GetClass();
+				UClass* cb = ABaseBlockActor::StaticClass();
+
+
+				auto block = Cast<ABaseBlockActor>(actor);
+				if (block && block->GateType == "Input")
+				{
+					TArray<UNodeStaticMeshComponent*, TInlineAllocator<8>> componentArray;
+					actor->GetComponents<UNodeStaticMeshComponent, TInlineAllocator<8>>(componentArray);
+					auto component = componentArray.HeapTop();
+					component->nowactivate = !component->nowactivate;
+				}
 			}
-
 		}
-
 	}
 }
 
 void AEditorPlayerController::MenuOn()
 {
-	menuOn=!menuOn;
-	if(menuOn==false)
+	menuOn = !menuOn;
+	if (menuOn == false)
 	{
-		if(actorShow)
+		if (actorShow)
 		{
 			actorShow->Destroy();
-			auto gameState=Cast<AEditorStateBase>(GetWorld()->GetGameState());
+			auto gameState = Cast<AEditorStateBase>(GetWorld()->GetGameState());
 			gameState->blockArray.Remove(actorShow);
 		}
 	}
@@ -305,27 +302,28 @@ void AEditorPlayerController::MenuOn()
 
 void AEditorPlayerController::Next(int idDelta)
 {
-	if(menuOn==false)return;
-	static int buildId=0;
-	buildId+=idDelta;
+	if (menuOn == false)return;
+	static int buildId = 0;
+	buildId += idDelta;
 	buildId++;
-	buildId%=PutList.Num();
+	buildId %= PutList.Num();
 	FVector Start, Dir, End;
 	if (DeprojectMousePositionToWorld(Start, Dir))
 	{
-		if(actorShow)
+		if (actorShow)
 		{
 			actorShow->Destroy();
-			auto gameState=Cast<AEditorStateBase>(GetWorld()->GetGameState());
+			auto gameState = Cast<AEditorStateBase>(GetWorld()->GetGameState());
 			gameState->blockArray.Remove(actorShow);
 		}
-		
+
 		//根据鼠标位置 计算出朝向和视角起点的世界坐标
 		End = Start + (Dir * 1e9f);
 		FVector pos = FMath::LinePlaneIntersection(Start, End,
-                                                   FVector(0,0,80),
-                                                   FVector(0, 0, 1));
-		actorShow=GetWorld()->SpawnActor<ABaseBlockActor>(PutList[buildId], pos, FRotator(0), FActorSpawnParameters());
+		                                           FVector(0, 0, 80),
+		                                           FVector(0, 0, 1));
+		actorShow = GetWorld()->SpawnActor<ABaseBlockActor
+		>(PutList[buildId], pos, FRotator(0), FActorSpawnParameters());
 		actorShow->SetActorLocation(pos);
 	}
 }
@@ -341,12 +339,11 @@ void AEditorPlayerController::ReFreshPut()
 	FVector Start, Dir, End;
 	if (DeprojectMousePositionToWorld(Start, Dir))
 	{
-		
 		//根据鼠标位置 计算出朝向和视角起点的世界坐标
 		End = Start + (Dir * 8e9f);
 		FVector pos = FMath::LinePlaneIntersection(Start, End,
-                                                   FVector(0,0,80),
-                                                   FVector(0, 0, 1));
+		                                           FVector(0, 0, 80),
+		                                           FVector(0, 0, 1));
 		// UE_LOG(LogTemp, Warning, TEXT("%s"), *pos.ToString())
 
 		actorShow->SetActorLocation(pos);
@@ -355,22 +352,33 @@ void AEditorPlayerController::ReFreshPut()
 
 void AEditorPlayerController::StartSim()
 {
-	auto gameState=Cast<AEditorStateBase>(GetWorld()->GetGameState());
+	double timestart = FDateTime::Now().GetTimeOfDay().GetTotalMilliseconds();
+	auto gameState = Cast<AEditorStateBase>(GetWorld()->GetGameState());
+
+
 	gameState->SolveTickLogic();
+
+
+	double timeend = FDateTime::Now().GetTimeOfDay().GetTotalMilliseconds();
+	UE_LOG(LogTemp, Warning, TEXT("TIME: %f"), (float)(timeend-timestart));
 }
 
 void AEditorPlayerController::AlwaysSim()
 {
-	
-	simOn=!simOn;
-	
+	simOn = !simOn;
+}
+
+void AEditorPlayerController::SaveVerilog()
+{
+	auto gameState = Cast<AEditorStateBase>(GetWorld()->GetGameState());
+	gameState->SaveVerilog();
 }
 
 void AEditorPlayerController::ChangeMesh(FVector start, FVector end, ALinkStaticMeshActor* mesh)
 {
 	float distance = FVector::Distance(end, start);
 	mesh->SetActorScale3D(FVector(0.25, 0.25, distance / 100));
-	lastEndPosition=end;
+	lastEndPosition = end;
 	FVector centerPos = (end + start) / 2;
 	mesh->SetActorLocation(centerPos);
 }

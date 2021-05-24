@@ -40,6 +40,7 @@ protected:
 	void ReFreshPut();
 	void StartSim();
 	void AlwaysSim();
+	void SaveVerilog();
 	void ChangeMesh(FVector start, FVector end, ALinkStaticMeshActor* mesh);
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;
