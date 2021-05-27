@@ -354,7 +354,7 @@ void AEditorPlayerController::StartSim()
 {
 	double timestart = FDateTime::Now().GetTimeOfDay().GetTotalMilliseconds();
 	auto gameState = Cast<AEditorStateBase>(GetWorld()->GetGameState());
-
+	gameState->LoadDLL();
 
 	gameState->SolveTickLogic();
 

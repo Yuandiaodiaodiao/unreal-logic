@@ -2,6 +2,8 @@
 
 
 #include "EditorStateBase.h"
+#include "MYMACRO.h"
+#include <string>
 
 int GetNodeComponents(ABaseBlockActor* actor, TMap<int, TArray<int>>& G, TMap<int, ABaseBlockActor*>& mapId)
 {
@@ -254,14 +256,14 @@ void AEditorStateBase::SaveVerilog()
 	FString modelInitCode = "";
 	modelInitCode += "module mmm(";
 	FString WireAll = "";
-	
+
 	for (int a = 0; a < lineArray.Num(); ++a)
 	{
 		WireAll += "\nwire gatewire";
 		WireAll += FString::FromInt(a);
 		WireAll += ";";
 	}
-	
+
 	FString InputWire = "";
 	//收集输入输出的wire
 	TArray<tempop> inputWire;
@@ -304,7 +306,7 @@ void AEditorStateBase::SaveVerilog()
 			OutputWire += ";";
 		}
 	}
-	
+
 	if (modelInitCode.EndsWith(","))
 	{
 		modelInitCode.RemoveFromEnd(",");
@@ -341,7 +343,7 @@ void AEditorStateBase::SaveVerilog()
 			op.outputwireIdF.Add(group);
 		}
 	}
-	FString MainCode="";
+	FString MainCode = "";
 	for (auto& op : tempopArray)
 	{
 		if (op.outputwireId.Num() <= 1)
@@ -369,7 +371,7 @@ void AEditorStateBase::SaveVerilog()
 	//拼接
 	FString outputString = modelInitCode;
 	outputString += WireAll;
-	outputString+=InputWire;
+	outputString += InputWire;
 	outputString += OutputWire;
 	outputString += MainCode;
 	outputString += "\nendmodule";
@@ -377,5 +379,45 @@ void AEditorStateBase::SaveVerilog()
 	FString gameDir = FPaths::ProjectDir() + FString("verilog.v");
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *gameDir);
 	FFileHelper::SaveStringToFile(outputString, *gameDir);
-	
+}
+
+void AEditorStateBase::LoadDLL()
+{
+	FString filePath = FPaths::ProjectDir() + "/Cuda/CUDA/x64/Debug/CUDA.dll";
+	if (FPaths::FileExists(filePath))
+	{
+		DLLHandle = FPlatformProcess::GetDllHandle(*filePath);
+		if (DLLHandle != NULL)
+		{
+			LOGWARNING("载入CUDA.dll成功")
+			typedef void (*_dllFun_init)();
+			
+			_dllFun_init init;
+			FString funName = "initCuda";
+			init = (_dllFun_init)FPlatformProcess::GetDllExport(DLLHandle, *funName);
+			if (init != NULL)
+			{
+				init();
+			}
+			else
+			{
+				LOGERROR("init失败")
+			}
+			typedef char* (*_dllFun_add)();
+			_dllFun_add add;
+			FString funName2 = "doAdd";
+			add = (_dllFun_add)FPlatformProcess::GetDllExport(DLLHandle, *funName2);
+			if (add != NULL)
+			{
+				char* c;
+				c=add();
+				FString ans = UTF8_TO_TCHAR(c);
+				LOGWARNING("cuda add返回%s", *ans)
+			}
+		}
+	}
+	else
+	{
+		LOGWARNING("找不到CUDA.dll")
+	}
 }

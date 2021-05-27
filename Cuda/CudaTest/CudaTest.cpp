@@ -2,10 +2,19 @@
 //
 
 #include <iostream>
-
+#include "kernel.cuh"
+#include <string>
+using namespace std;
 int main()
 {
-    std::cout << "Hello World!\n";
+    string s="2";
+    string a="1";
+    s.append(a);
+    cout << s << endl;
+    initCuda();
+    const char* ss=doAdd();
+    
+    std::cout << "Hello World!\n" << ss;
 }
 
 // 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单

@@ -27,4 +27,6 @@ public:
 	void CollectDataToGraph();
 	void SolveTickLogic();
 	void SaveVerilog();
+	void LoadDLL();
+	void* DLLHandle;
 };
