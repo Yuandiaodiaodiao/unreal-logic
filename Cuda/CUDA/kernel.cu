@@ -3,6 +3,10 @@
 #include "device_launch_parameters.h"
 #include<iostream>
 #include <stdio.h>
+
+
+
+
 using namespace std;
 cudaError_t addWithCuda(int *c, const int *a, const int *b, unsigned int size);
 
