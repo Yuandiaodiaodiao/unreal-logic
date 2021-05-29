@@ -34,6 +34,7 @@ void RefreshInput(ABaseBlockActor* actor)
 {
 	TArray<UNodeStaticMeshComponent*, TInlineAllocator<16>> componentArray;
 	actor->GetComponents<UNodeStaticMeshComponent, TInlineAllocator<16>>(componentArray);
+
 	for (auto& component : componentArray)
 	{
 		//刷新activate到当前tick 非门的输出 也要经过计算 所以就算没连也计算出是on? 刷回activate
@@ -67,6 +68,9 @@ void SolveOutput(ABaseBlockActor* actor, TArray<UNodeStaticMeshComponent*>& outp
 	auto type = actor->GateType;
 	auto and = [](bool x, bool y)-> bool { return x && y; };
 	auto or = [](bool x, bool y)-> bool { return x || y; };
+	auto not = [](bool x)-> bool { return !x; };
+	auto xor = [](bool x, bool y)-> bool { return x ^ y; };
+	auto nand = [](bool x, bool y)-> bool { return !(x && y); };
 	if (type.Equals("And"))
 	{
 		outputComponents.HeapTop()->nextactivate = and(inputComponents.Last()->nextactivate,
@@ -81,6 +85,21 @@ void SolveOutput(ABaseBlockActor* actor, TArray<UNodeStaticMeshComponent*>& outp
 	{
 		//输入的输出 是始终同步的
 		outputComponents.HeapTop()->nextactivate = outputComponents.HeapTop()->nowactivate;
+	}
+	else if (type.Equals("Not"))
+	{
+		// LOGWARNING("Not gate")
+		outputComponents.HeapTop()->nextactivate = not(inputComponents.Last()->nextactivate);
+	}
+	else if (type.Equals("Xor"))
+	{
+		outputComponents.HeapTop()->nextactivate = xor(inputComponents.Last()->nextactivate,
+		                                               inputComponents.Last(1)->nextactivate);
+	}
+	else if (type.Equals("NAnd"))
+	{
+		outputComponents.HeapTop()->nextactivate = nand(inputComponents.Last()->nextactivate,
+		                                                inputComponents.Last(1)->nextactivate);
 	}
 }
 
@@ -122,7 +141,7 @@ void AEditorStateBase::SolveTickLogic()
 	 *
 	 */
 
-	UE_LOG(LogTemp, Warning, TEXT("block num=%d"), blockArray.Num());
+	// UE_LOG(LogTemp, Warning, TEXT("block num=%d"), blockArray.Num());
 	for (auto& block : blockArray)
 	{
 		//同步input
@@ -166,6 +185,34 @@ void AEditorStateBase::SolveTickLogic()
 	}
 }
 
+void AEditorStateBase::SyncAllInput()
+{
+	// UE_LOG(LogTemp, Warning, TEXT("block num=%d"), blockArray.Num());
+	for (auto& block : blockArray)
+	{
+		//同步input
+		TArray<UNodeStaticMeshComponent*, TInlineAllocator<16>> componentArray;
+		SyncInput(block, componentArray);
+	}
+
+	for (auto& block : blockArray)
+	{
+		TArray<UNodeStaticMeshComponent*, TInlineAllocator<16>> componentArray;
+		block->GetComponents<UNodeStaticMeshComponent, TInlineAllocator<16>>(componentArray);
+
+		for (auto& component : componentArray)
+		{
+			//只刷新输入
+			if (component->type.Equals("input"))
+			{
+				//刷新activate到当前tick 非门的输出 也要经过计算 所以就算没连也计算出是on? 刷回activate
+				component->nowactivate = component->nextactivate;
+				component->nextactivate = false;
+			}
+		}
+	}
+}
+
 struct tempop
 {
 	FString op;
@@ -183,7 +230,7 @@ void linkassign(FString& fs, TArray<FString>& fsa)
 		for (auto x : fsa)
 		{
 			if (first.Equals(x))continue;
-			fs += "\n assign " + x + "=" + first + ";";
+			fs += "\nassign " + x + "=" + first + ";";
 		}
 	}
 }
@@ -365,6 +412,30 @@ void AEditorStateBase::SaveVerilog()
 				//链式赋值
 				linkassign(MainCode, op.outputwireIdF.HeapTop());
 			}
+			else if (op.op.Equals("Not"))
+			{
+				MainCode += "\nassign " + op.outputwireIdF.HeapTop().HeapTop() + "= !" + op.inputwireIdF.HeapTop()
+					+ ";";
+				//链式赋值
+				linkassign(MainCode, op.outputwireIdF.HeapTop());
+			}
+			else if (op.op.Equals("Xor"))
+			{
+				MainCode += "\nassign " + op.outputwireIdF.HeapTop().HeapTop() + "=" + op.inputwireIdF.HeapTop() + "^"
+					+
+					op.inputwireIdF.Last() + ";";
+				//链式赋值
+				linkassign(MainCode, op.outputwireIdF.HeapTop());
+			}
+			else if (op.op.Equals("NAnd"))
+			{
+				MainCode += "\nassign " + op.outputwireIdF.HeapTop().HeapTop() + "= !(" + op.inputwireIdF.HeapTop() +
+					"&"
+					+
+					op.inputwireIdF.Last() + ");";
+				//链式赋值
+				linkassign(MainCode, op.outputwireIdF.HeapTop());
+			}
 		}
 	}
 
@@ -391,7 +462,7 @@ void AEditorStateBase::LoadDLL()
 		{
 			LOGWARNING("载入CUDA.dll成功")
 			typedef void (*_dllFun_init)();
-			
+
 			_dllFun_init init;
 			FString funName = "initCuda";
 			init = (_dllFun_init)FPlatformProcess::GetDllExport(DLLHandle, *funName);
@@ -410,7 +481,7 @@ void AEditorStateBase::LoadDLL()
 			if (add != NULL)
 			{
 				char* c;
-				c=add();
+				c = add();
 				FString ans = UTF8_TO_TCHAR(c);
 				LOGWARNING("cuda add返回%s", *ans)
 			}
