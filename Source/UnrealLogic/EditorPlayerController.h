@@ -50,6 +50,7 @@ protected:
 	void SaveVerilog();
 	void Refresh();
 	void Record();
+	void PerformanceTest();
 	void ChangeMesh(FVector start, FVector end, ALinkStaticMeshActor* mesh);
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;

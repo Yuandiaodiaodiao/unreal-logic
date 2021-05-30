@@ -19,9 +19,9 @@ AEditorPlayerController::AEditorPlayerController()
 	mouseState.Append("release");
 	PutList.Add(ConstructorHelpers::FClassFinder<ABaseBlockActor>(TEXT("/Game/Blueprints/AndGate")).Class);
 	PutList.Add(ConstructorHelpers::FClassFinder<ABaseBlockActor>(TEXT("/Game/Blueprints/OrGate")).Class);
+	PutList.Add(ConstructorHelpers::FClassFinder<ABaseBlockActor>(TEXT("/Game/Blueprints/NotGate")).Class);
 	PutList.Add(ConstructorHelpers::FClassFinder<ABaseBlockActor>(TEXT("/Game/Blueprints/Input")).Class);
 	PutList.Add(ConstructorHelpers::FClassFinder<ABaseBlockActor>(TEXT("/Game/Blueprints/Output")).Class);
-	PutList.Add(ConstructorHelpers::FClassFinder<ABaseBlockActor>(TEXT("/Game/Blueprints/NotGate")).Class);
 	PutList.Add(ConstructorHelpers::FClassFinder<ABaseBlockActor>(TEXT("/Game/Blueprints/NAndGate")).Class);
 	PutList.Add(ConstructorHelpers::FClassFinder<ABaseBlockActor>(TEXT("/Game/Blueprints/XorGate")).Class);
 }
@@ -51,6 +51,7 @@ void AEditorPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Always_Sim", IE_Pressed, this, &AEditorPlayerController::AlwaysSim);
 	InputComponent->BindAction("SaveVerilog", IE_Pressed, this, &AEditorPlayerController::SaveVerilog);
 	InputComponent->BindAction("Record", IE_Pressed, this, &AEditorPlayerController::Record);
+	InputComponent->BindAction("Test", IE_Pressed, this, &AEditorPlayerController::PerformanceTest);
 }
 
 void AEditorPlayerController::ChangeNodeState(UNodeStaticMeshComponent* component, FVector startNormal)
@@ -382,7 +383,6 @@ void AEditorPlayerController::Next(int idDelta)
 		                                           FVector(0, 0, 1));
 		actorShow = GetWorld()->SpawnActor<ABaseBlockActor
 		>(PutList[buildId], pos, FRotator(0), FActorSpawnParameters());
-		actorShow->SetActorLocation(pos);
 	}
 }
 
@@ -476,6 +476,66 @@ void AEditorPlayerController::Record()
 		LOGWARNING("开启录制")
 	}
 	recordOn = !recordOn;
+}
+
+void AEditorPlayerController::PerformanceTest()
+{
+	int blockNum=1000;
+	// 	for(int a=0;a<blockNum;++a)
+	// 	{
+	// 		for(int types=0;types<=2;++types)
+	// 		{
+	// 			GetWorld()->SpawnActor<ABaseBlockActor
+	//        >(PutList[types], FVector(-100), FRotator(0), FActorSpawnParameters());
+	// 		}
+	// 	}
+	// //放置完成 生成record
+	// auto gameState = Cast<AEditorStateBase>(GetWorld()->GetGameState());
+	// Recorder* recordx=new Recorder();
+	// recordx->RecordOnce(gameState);
+	// TArray<BlockStatus>& StatusArray=recordx->StatusArray.HeapTop();
+	TArray<BlockStatus>StatusArray;
+	for(int xx=0;xx<blockNum;++xx)
+	{
+		
+	}
+	auto gameState = Cast<AEditorStateBase>(GetWorld()->GetGameState());
+
+	double timestart = FDateTime::Now().GetTimeOfDay().GetTotalMilliseconds();
+
+	for(int timesx=0;timesx<100;++timesx)
+	{
+		gameState->OnlySyncInput();
+	}
+	// //100次
+	// for(int timesx=0;timesx<100;++timesx)
+	// {
+	// 	for(auto& status:StatusArray)
+	// 	{
+	// 		if(status.blockType==0)
+	// 		{
+	// 			status.nodeStatus=(status.nodeStatus&1)&(status.nodeStatus>>1&1);
+	// 		}else if(status.blockType==1)
+	// 		{
+	// 			status.nodeStatus=(status.nodeStatus&1)|(status.nodeStatus>>1&1);
+	// 		}else if(status.blockType==2)
+	// 		{
+	// 			status.nodeStatus=~(status.nodeStatus&1);
+	// 		}
+	// 	}
+	// }
+	double timeend = FDateTime::Now().GetTimeOfDay().GetTotalMilliseconds();
+	UE_LOG(LogTemp, Warning, TEXT("TIMEfor OnlySyncInput: %f ms"), (float)(timeend-timestart));
+
+	timestart = FDateTime::Now().GetTimeOfDay().GetTotalMilliseconds();
+
+	for(int timesx=0;timesx<100;++timesx)
+	{
+		gameState->SolveTickLogic();
+	}
+	timeend = FDateTime::Now().GetTimeOfDay().GetTotalMilliseconds();
+	UE_LOG(LogTemp, Warning, TEXT("TIME for SolveTickLogic: %f ms"), (float)(timeend-timestart));
+	
 }
 
 void AEditorPlayerController::ChangeMesh(FVector start, FVector end, ALinkStaticMeshActor* mesh)

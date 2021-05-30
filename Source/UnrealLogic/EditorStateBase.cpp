@@ -185,6 +185,20 @@ void AEditorStateBase::SolveTickLogic()
 	}
 }
 
+void AEditorStateBase::OnlySyncInput()
+{
+	for (auto& block : blockArray)
+	{
+		//同步input
+		TArray<UNodeStaticMeshComponent*, TInlineAllocator<16>> componentArray;
+		SyncInput(block, componentArray);
+	}
+	for (auto& block : blockArray)
+	{
+		RefreshInput(block);
+	}
+}
+
 void AEditorStateBase::SyncAllInput()
 {
 	// UE_LOG(LogTemp, Warning, TEXT("block num=%d"), blockArray.Num());

@@ -12,7 +12,12 @@ int main()
     s.append(a);
     cout << s << endl;
     initCuda();
-    const char* ss=doAdd();
+    int**xx= new int* [6];
+    int arraySize = 32;
+    for (int a = 0; a <= 5; ++a) {
+        xx[a] = new int[arraySize];
+    }
+    const char* ss= doPreformanceTest(xx[0],xx[1],xx[2],xx[3],xx[4],xx[5],arraySize,100);
     
     std::cout << "Hello World!\n" << ss;
 }

@@ -26,6 +26,7 @@ public:
 
 	void CollectDataToGraph();
 	void SolveTickLogic();
+	void OnlySyncInput();
 	void SyncAllInput();
 	void SaveVerilog();
 	void LoadDLL();

@@ -27,6 +27,16 @@ void Recorder::RecordOnce(AEditorStateBase* gameState)
 			//从右向左压入状态
 			status.nodeStatus = (component->nowactivate & 1) | (status.nodeStatus << 1);
 		}
+		if(block->GateType.Equals("And"))
+		{
+			status.blockType=0;
+		}else if(block->GateType.Equals("Or"))
+		{
+			status.blockType=1;
+		}else if(block->GateType.Equals("Not"))
+		{
+			status.blockType=2;
+		}
 		StatusTemp.Add(status);
 	}
 	//和上一个状态进行比较 如果不同就保留 相同就删除

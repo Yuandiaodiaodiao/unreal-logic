@@ -8,6 +8,7 @@
 
 struct BlockStatus
 {
+	int blockType;
 	int nodeStatus;
 	int insiderStatus;
 };
